@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Plus, Trash2, Globe, User, Eye, EyeOff } from "lucide-react";
+import { Copy, Plus, Trash2, Globe, User, Eye, EyeOff, Share } from "lucide-react";
 import { useChromeStorage } from "@/hooks/use-chrome-storage";
 
 type Credential = {
@@ -63,6 +63,19 @@ export default function PopupVault() {
   const togglePasswordVisibility = (id: string) => {
     setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }));
   };
+  
+  const handleAutofill = (credential: Credential) => {
+    chrome.runtime.sendMessage({
+      type: 'fill-credentials',
+      credentials: credential
+    }, () => {
+      if (chrome.runtime.lastError) {
+        toast({ variant: "destructive", title: "Error", description: "Could not fill credentials. Try refreshing the page." });
+      } else {
+        toast({ title: "Success", description: "Credentials filled." });
+      }
+    });
+  };
 
   return (
     <Card className="max-w-4xl mx-auto border-0 shadow-none">
@@ -89,7 +102,7 @@ export default function PopupVault() {
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="website">Website</Label>
-                <Input id="website" value={newCredential.website} onChange={(e) => setNewCredential({...newCredential, website: e.target.value})} />
+                <Input id="website" placeholder="e.g. google.com" value={newCredential.website} onChange={(e) => setNewCredential({...newCredential, website: e.target.value})} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
@@ -128,6 +141,9 @@ export default function PopupVault() {
                     {revealedPasswords[cred.id] ? cred.password : '••••••••••••'}
                   </span>
                   <div className="flex items-center">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleAutofill(cred)} aria-label="Autofill credentials">
+                      <Share className="h-4 w-4" />
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => togglePasswordVisibility(cred.id)} aria-label="Toggle password visibility">
                       {revealedPasswords[cred.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>

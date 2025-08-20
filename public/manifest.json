@@ -1,13 +1,12 @@
-
 {
   "manifest_version": 3,
   "name": "PassKey Pro",
-  "version": "1.0.0",
-  "description": "Your secure and simple solution for password management.",
+  "version": "1.0",
+  "description": "A secure password manager and generator.",
   "permissions": [
     "storage",
-    "offscreen",
     "activeTab",
+    "identity",
     "scripting"
   ],
   "host_permissions": [
@@ -15,19 +14,43 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "PassKey Pro"
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["content.css"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_end",
+      "all_frames": true
     }
   ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self';"
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/key-icon.svg"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }

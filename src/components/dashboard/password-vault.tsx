@@ -12,11 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Plus, Trash2, Globe, User } from "lucide-react";
+import { Copy, Plus, Trash2, Globe, User, Eye, EyeOff } from "lucide-react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 type Credential = {
   id: string;
@@ -26,9 +28,10 @@ type Credential = {
 };
 
 export default function PasswordVault() {
-  const [credentials, setCredentials] = useState<Credential[]>([]);
+  const [credentials, setCredentials, loading] = useLocalStorage<Credential[]>("dashboard-credentials", []);
   const [newCredential, setNewCredential] = useState<Omit<Credential, "id">>({ website: "", username: "", password: "" });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   const handleAddCredential = () => {
@@ -56,13 +59,17 @@ export default function PasswordVault() {
     toast({ title: "Copied!", description: "Password has been copied to clipboard." });
   };
 
+  const togglePasswordVisibility = (id: string) => {
+    setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Password Vault</CardTitle>
           <CardDescription>
-            Your locally stored credentials. Data is not saved on any server and will be lost on refresh.
+            Your credentials, stored locally in your browser.
           </CardDescription>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -79,27 +86,28 @@ export default function PasswordVault() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="website" className="text-right">Website</Label>
-                <Input id="website" value={newCredential.website} onChange={(e) => setNewCredential({...newCredential, website: e.target.value})} className="col-span-3" />
+               <div className="space-y-2">
+                <Label htmlFor="website">Website</Label>
+                <Input id="website" placeholder="e.g. google.com" value={newCredential.website} onChange={(e) => setNewCredential({...newCredential, website: e.target.value})} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="username" className="text-right">Username</Label>
-                <Input id="username" value={newCredential.username} onChange={(e) => setNewCredential({...newCredential, username: e.target.value})} className="col-span-3" />
+              <div className="space-y-2">
+                <Label htmlFor="username">Username or Email</Label>
+                <Input id="username" value={newCredential.username} onChange={(e) => setNewCredential({...newCredential, username: e.target.value})} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="password" className="text-right">Password</Label>
-                <Input id="password" type="password" value={newCredential.password} onChange={(e) => setNewCredential({...newCredential, password: e.target.value})} className="col-span-3" />
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={newCredential.password} onChange={(e) => setNewCredential({...newCredential, password: e.target.value})} />
               </div>
             </div>
             <DialogFooter>
+              <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
               <Button type="submit" onClick={handleAddCredential}>Save credential</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent>
-        {credentials.length === 0 ? (
+        {loading ? <p>Loading vault...</p> : credentials.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
             <p className="text-lg font-medium">Your vault is empty.</p>
             <p>Click "Add Credential" to get started.</p>
@@ -116,7 +124,15 @@ export default function PasswordVault() {
                         <User className="h-4 w-4 text-muted-foreground shrink-0"/> {cred.username}
                     </CardDescription>
                 </CardHeader>
+                 <CardContent className="flex-grow flex items-center gap-2 text-sm font-mono py-2">
+                  <span className="flex-1 truncate">
+                    {revealedPasswords[cred.id] ? cred.password : '••••••••••••'}
+                  </span>
+                </CardContent>
                 <CardFooter className="flex items-center justify-end gap-1 mt-auto p-2 border-t">
+                  <Button variant="ghost" size="icon" onClick={() => togglePasswordVisibility(cred.id)} aria-label="Toggle password visibility">
+                      {revealedPasswords[cred.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => copyToClipboard(cred.password)} aria-label="Copy password">
                     <Copy className="h-4 w-4" />
                   </Button>
