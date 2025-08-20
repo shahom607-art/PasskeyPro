@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -53,7 +54,7 @@ export default function BreachChecker() {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto mt-4">
+    <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Password Breach Check</CardTitle>
         <CardDescription>

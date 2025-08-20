@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -74,7 +75,7 @@ export default function PasswordGenerator() {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto mt-4">
+    <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Password Generator</CardTitle>
         <CardDescription>
