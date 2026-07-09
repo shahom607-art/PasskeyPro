@@ -1,3 +1,12 @@
+if (typeof window === 'undefined') {
+  Object.defineProperty(globalThis, 'localStorage', {
+    get() {
+      return undefined;
+    },
+    configurable: true,
+  });
+}
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/auth-provider';

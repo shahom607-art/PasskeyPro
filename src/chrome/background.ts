@@ -45,10 +45,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 return true; // async
         }
     } else if (message.type === 'autofill-credentials') {
-        if(message.action === 'get' && sender.tab?.url) {
+        const tabUrl = sender.tab?.url;
+        if(message.action === 'get' && tabUrl) {
             getCredentials().then(credentials => {
                 try {
-                    const url = new URL(sender.tab.url);
+                    const url = new URL(tabUrl);
                     const matchingCreds = credentials.filter(c => {
                         if (!c.website) return false;
                         // Support both full URLs and domain names
